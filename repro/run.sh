@@ -18,4 +18,4 @@ fi
 if ! python3 -c "import transformers, datasets" >/dev/null 2>&1; then
   python3 -m pip install --quiet --disable-pip-version-check transformers datasets
 fi
-python3 repro/run.py
+python3 -m repro.run
