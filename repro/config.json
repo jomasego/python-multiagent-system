@@ -1,6 +1,13 @@
 {
-  "tracks": ["theory", "digits"],
+  "tracks": [
+    "text",
+    "conversion_fit"
+  ],
   "seed": 0,
-  "text_specs": ["binary_sst2", "sentiment3", "emotion6"],
+  "text_specs": [
+    "binary_sst2",
+    "sentiment3",
+    "emotion6"
+  ],
   "out_dir": "repro/out"
 }
