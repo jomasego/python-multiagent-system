@@ -194,9 +194,11 @@ def write_summary_md(results: Dict[str, Any], out_path: str) -> None:
         lines.append("|---|---:|---:|---:|---:|")
         for key, entry in results["models"].items():
             for row in entry["summary"].get("temperature_sweep", []):
+                acc = f"{100*row['accuracy_argmax']:.2f}%" if "accuracy_argmax" in row else "n/a"
+                ece_v = f"{row['ece_15']:.4f}" if "ece_15" in row else "n/a"
                 lines.append(
                     f"| {entry['summary']['name']} | {row['temperature']} | {100*row['delta_0.5']:.2f}% | "
-                    f"{100*row['accuracy_argmax']:.2f}% | {row.get('ece_15', float('nan')):.4f} |"
+                    f"{acc} | {ece_v} |"
                 )
         lines.append("")
         lines.append("### Per-class ROC operating points (0.5 vs best F1)")
