@@ -245,6 +245,7 @@ def write_outputs(results: Dict[str, Any], out_dir: str, include_arrays: bool = 
         "meta": results.get("meta", {}),
         "theory": results.get("theory"),
         "models": {k: {"summary": v["summary"]} for k, v in results.get("models", {}).items()},
+        "tabular": results.get("tabular"),
         "conversion_fit": results.get("conversion_fit", {}),
     }
     with open(os.path.join(out_dir, "results.json"), "w", encoding="utf-8") as fh:
