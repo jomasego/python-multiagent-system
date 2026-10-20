@@ -14,6 +14,7 @@ import numpy as np
 from .diagnostics import linear_conversion_fit, to_jsonable
 from .models import run_digits, run_text, run_vision_track
 from .report import write_outputs
+from .tabular import run_tabular
 from .theory import run_theory
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -146,6 +147,13 @@ def main() -> int:
             fit = linear_conversion_fit(probs, key)
             results["conversion_fit"][key] = fit
             print(f"[fit] {key}: train={fit.get('train_accuracy')} test={fit.get('test_accuracy')}", flush=True)
+    if "tabular" in tracks:
+        print("=== TRACK: tabular ===", flush=True)
+        try:
+            results["tabular"] = run_tabular(out_dir, seed)
+        except Exception:
+            traceback.print_exc()
+            results["errors"].append("tabular")
     if "vision" in tracks:
         print("=== TRACK: vision ===", flush=True)
         try:
@@ -165,6 +173,7 @@ def main() -> int:
         "meta": meta,
         "theory": results.get("theory"),
         "models": {k: {"summary": v["summary"]} for k, v in results.get("models", {}).items()},
+        "tabular": results.get("tabular"),
         "conversion_fit": results.get("conversion_fit", {}),
         "errors": results["errors"],
     }
@@ -173,6 +182,13 @@ def main() -> int:
     print("=== SUMMARY ===", flush=True)
     for key, entry in results.get("models", {}).items():
         _print_model(entry["summary"])
+    if results.get("tabular"):
+        print("=== TABULAR MAX-F1 ===", flush=True)
+        for row in results["tabular"]["experiments"]:
+            if row["kind"] == "binary":
+                print(f"{row['dataset']}/{row['classifier']}: tau={row['tau']:.4f} F1@0.5={row['f1_at_0.5']:.4f} F1@tau={row['f1_at_tau']:.4f} exact={row['conversion_exact']}", flush=True)
+            else:
+                print(f"{row['dataset']}/{row['classifier']}: tau=[{row['tau_min']:.3f},{row['tau_max']:.3f}] macroF1@0.5={row['macro_f1_at_0.5']:.4f} macroF1@tau={row['macro_f1_at_tau']:.4f} argmaxF1={row['argmax_f1']:.4f} exact={row['conversion_exact']} agree={100*row['argmax_agreement']:.1f}%", flush=True)
     if results.get("conversion_fit"):
         print("=== FIXED-AFFINE FIT ===", flush=True)
         for key, fit in results["conversion_fit"].items():
@@ -193,7 +209,7 @@ def main() -> int:
     print("          https://huggingface.co/datasets/uoft-cs/cifar10", flush=True)
     print("          https://huggingface.co/datasets/stanfordnlp/sst2", flush=True)
     print("=== DONE ===", flush=True)
-    return 0 if results.get("theory") or results.get("models") else 1
+    return 0 if results.get("theory") or results.get("models") or results.get("tabular") else 1
 
 
 if __name__ == "__main__":
